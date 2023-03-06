@@ -1,4 +1,103 @@
-/*.App {*/
 
-/*}*/
+@font-face {
+    font-family: 'headerFont';
+    src:url(headerFont.woff.otf)
+}
+body {
+    background-color: #3b7041;
+}
+.modalBackground {
+    width: 100vw;
+    height: 100vh;
+    background-color: #3b7041;
+    position: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.modalContainer {
+    width: 350px;
+    height: 350px;
+    border-radius: 8px;
+    box-shadow: black 0 5px 15px;
+    display: flex;
+    flex-direction: column;
+    padding: 25px;
 
+}
+.modalContainer .title {
+    font-size: 18px;
+    letter-spacing: 8px;
+    font-family: headerFont;
+    color: black;
+    display: inline-block;
+    text-align: center;
+    margin-top: 0;
+
+}
+.modalContainer .body {
+    flex: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.7rem;
+}
+.modalContainer .footer  {
+    flex: 20%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.EndModalBackground {
+    width: 100vw;
+    height: 100vh;
+    background-color: #3b7041;
+    position: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.EndModalContainer {
+    width: 350px;
+    height: 350px;
+    border-radius: 8px;
+    background-color: white;
+    box-shadow: black 0 5px 15px;
+    display: flex;
+    flex-direction: column;
+    padding: 25px;
+
+}
+.EndTitle {
+    font-size: 19px;
+    letter-spacing: 8px;
+    font-family: headerFont;
+    color: black;
+    display: inline-block;
+    text-align: center;
+
+}
+.EndModalContainer .body {
+    line-height: 1;
+    flex: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.7rem;
+}
+.EndModalContainer .footer  {
+    flex: 20%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+@keyframes shake {
+    0% { transform: translate(0, 0); }
+    10%, 30%, 50%, 70%, 90% { transform: translate(-10px, 0); }
+    20%, 40%, 60%, 80% { transform: translate(10px, 0); }
+    100% { transform: translate(0, 0); }
+}
+.tile.shake{
+    animation: shake 1s;
+}

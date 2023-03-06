@@ -1,13 +1,15 @@
-// modal
+
 import {useState} from "react";
 import backgroundImage from './woodentile.png'
 
 
-export const Tile = ({tile, onClick, isSelected}) => {
+export const Tile = ({tile, onClick, isSelected, shake}) => {
     const [hoveredIndex, setHoveredIndex] = useState(null)
     const border = `1px solid ${isSelected ? 'red' : 'black'}`
+
     return (
         <span
+            className={`tile ${shake ? 'shake' : ''}`}
             onClick={() => {
                 onClick()
             }}
@@ -18,6 +20,8 @@ export const Tile = ({tile, onClick, isSelected}) => {
                setHoveredIndex(null)
             }}
             style={{
+                fontWeight:'bold',
+                textTransform:'uppercase',
                 transform: hoveredIndex ? 'translateY(-10px)': 'none',
                 transition:'transform 0.3s ease',
                 cursor: 'pointer',
@@ -29,7 +33,9 @@ export const Tile = ({tile, onClick, isSelected}) => {
                 height: '7vh',
                 width: '5vw',
                 textAlign: "center",
-                color: 'black'
+                color: 'black',
+                borderRadius: '4px',
+                boxShadow: 'black 0 5px 5px'
             }}
         >
             {tile.letter}

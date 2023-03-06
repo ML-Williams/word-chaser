@@ -1,25 +1,20 @@
+import backgroundImage from './woodentile.png'
 import './App.css';
-import {useCallback, useEffect, useRef, useState} from "react"
+import {useCallback, useEffect, useState} from "react"
 import _ from 'underscore'
 import {nanoid} from "nanoid";
 import {Board} from "./Board";
 import {Timer} from "./Timer";
 import {Wordbank} from "./Wordbank";
+import { Button } from '@mantine/core'
+
 
 /**
- * UX (user experience):
+  UX (user experience):
  * - user comes onto screen and sees:
  *      - tasks for how to make them see that
  * - user preses play:
  *      - add username / click to start game
- * - user selected a letter:
- *      -  highlight
- *
- *  - check word input: isValid, isDuplicated, isNotValid
- *
- * - Add a clear and submit button
- *      - clear button should empty str (word="")
- *      - submit button should accept valid word into word bank or not then clear str(word)
  */
 
 const API_words = 'https://random-word-api.herokuapp.com/all'
@@ -49,21 +44,6 @@ const allVowelTiles = [
     {
         letter: "u",
         points: 20,
-        vowel: true
-    },
-    {
-        letter: "a",
-        points: 10,
-        vowel: true
-    },
-    {
-        letter: "e",
-        points: 10,
-        vowel: true
-    },
-    {
-        letter: "o",
-        points: 10,
         vowel: true
     },
 ]
@@ -182,71 +162,19 @@ const allConsonantTiles = [
 ]
     .map(tile => ({...tile, id: nanoid()}))
 
-export const useCountDown = (
-    total,
-    ms = 1000,
-) => {
-    const [counter, setCountDown] = useState(total);
-    const [startCountDown, setStartCountDown] = useState(false);
-    // Store the created interval
-    const intervalId = useRef();
-    const start = () => setStartCountDown(true);
-    const pause = () => setStartCountDown(false);
-    const reset = () => {
-        clearInterval(intervalId.current);
-        setStartCountDown(false);
-        setCountDown(total);
-    };
-
-    useEffect(() => {
-        intervalId.current = setInterval(() => {
-            startCountDown && counter > 0 && setCountDown(counter => counter - 1);
-        }, ms);
-        // Clear interval when count to zero
-        if (counter === 0) clearInterval(intervalId.current);
-        // Clear interval when unmount
-        return () => clearInterval(intervalId.current);
-    }, [startCountDown, counter, ms]);
-
-    return [counter, start, pause, reset];
-};
-
-//
-// const Submitbar = ({onKeyDown, word}) => {
-//
-//     return(
-//             <input
-//                 onSubmit={(e) =>  {
-//
-//                 }}
-//                 onChange={(e) => {
-//                     onKeyDown(e.target.value)
-//                 }}
-//                 value={word}
-//                 type={'text'}
-//                 placeholder={'Type words here...'}
-//                 style={{
-//                     display:"block",
-//                     margin:"1em auto",
-//                     width: '25vw'
-//                 }}
-//             />
-//
-//     )
-// }
-const vowelTiles = _.sample(allVowelTiles, 7)
-const consonantTiles = _.sample(allConsonantTiles, 9)
+const vowelTiles = _.sample(allVowelTiles, 5)
+const consonantTiles = _.sample(allConsonantTiles, 11)
 
 let tiles = [
     ...vowelTiles,
     ...consonantTiles
 ]
-const randomized = _.shuffle(tiles)
+const randomizedTiles = _.shuffle(tiles)
 
 
 export default function App() {
     const [wordBank, setWordBank] = useState()
-
+    const [isTimerStart, setIsTimerStart]=useState(false)
     useEffect(() => {
         fetch(API_words)
             .then(r => r.json())
@@ -255,25 +183,37 @@ export default function App() {
             })
     }, [])
 
-    // possibly figure out to iterate "qu" without separating the characters into strs
 
     const [selectedTiles, setSelectedTiles] = useState([])
+
+    useEffect(() => {
+
+    }, [selectedTiles])
     const word = selectedTiles.reduce((accum, tile) => {
         return accum + tile.letter
     }, '')
     const wordScore = selectedTiles.reduce((accum, tile) => {
         return accum + tile.points
     }, 0)
+    const [totalScore, setTotalScore]= useState(0)
+
+    const addScore = (wordScore) => {
+        setTotalScore(totalScore + wordScore)
+
+    }
     const [answers, setAnswers] = useState([])
     const [showInvalidWord, setShowInvalidWord]=useState(false)
     const [hasDuplicates, setHasDuplicates]= useState(false)
+    const [bestWord, setBestWord] = useState('')
 
     const onSubmit = useCallback(() => {
         // word = uon
         // wordBank = [wordswordsword]
 
         // validations: duplicate answer
-        if(answers.includes(word)) {
+
+        const answersWords = answers.map(answer => answer.word)
+        if(answersWords.includes(word)) {
             setHasDuplicates(true)
                 setTimeout(() =>{
                     setHasDuplicates(false)
@@ -294,7 +234,7 @@ export default function App() {
                     word: word,
                     points: wordScore
                 }])
-
+            addScore(wordScore)
             setSelectedTiles([])
         }
         else {
@@ -304,13 +244,251 @@ export default function App() {
                     setSelectedTiles([])
                 }, 1500)
         }
-    }, [word, wordBank, answers])
+    }, [word, wordBank, answers, wordScore, addScore])
 
+
+    const onTileClick = (tile) => {
+        // prev = e, tile.letter = 'p' => 'ep'
+
+        // tiles, selected
+        const ids = selectedTiles.map(
+            selectedTile => selectedTile.id
+        )
+        //
+        // tiles -> [ { letter, id, points, etc}]
+        // selectedTiles -> [] ->  [ { letter, id, points, etc} ]
+        // score -> selectedTiles.points
+        // ids -> [ selectedTiles.id ]
+        // word -> selectedTiles.letter
+        const getNeighbors = (i) => {
+            const neighbors = []
+            const coords = [];
+
+                    // right
+            if ((i + 1) % 4 !== 0) {
+                coords.push(i + 1);
+            }
+                    // left
+            if (i % 4 !== 0) {
+                coords.push(i - 1);
+            }
+                    // top
+            if (i >= 4) {
+                coords.push(i - 4);
+            }
+                    // bottom
+            if (i < 12) {
+                coords.push(i + 4);
+            }
+                    // bottom right
+            if ((i + 1) % 4 !== 0 && i < 12) {
+                coords.push(i + 5);
+            }
+                    // top left
+            if (i % 4 !== 0 && i >= 4) {
+                coords.push(i - 5);
+            }
+                    // bottom left
+            if (i % 4 !== 0 && i < 12) {
+                coords.push(i + 3);
+            }
+                    // top right
+            if ((i + 1) % 4 !== 0 && i >= 4) {
+                coords.push(i - 3);
+            }
+
+            coords.forEach((coord) => {
+                neighbors.push(randomizedTiles[coord])
+            })
+
+            return neighbors
+        }
+        const tileIndex = randomizedTiles.indexOf(tile)
+
+        const tileNeighbors = getNeighbors(tileIndex)
+        let hasSelectedNeighbor = false
+
+        const lastSelected = selectedTiles[selectedTiles.length - 1]
+        if(lastSelected === tile){
+            onSubmit()
+        }
+        for (let i = 0; i < tileNeighbors.length; i++) {
+            if (lastSelected === tileNeighbors[i]){
+                hasSelectedNeighbor = true
+                break
+            }
+
+        }
+        if (!hasSelectedNeighbor && selectedTiles.length !== 0) {
+            handleShake()
+            return
+        }
+
+        if (!ids.includes(tile.id)) {
+            setSelectedTiles(prev => [...prev, tile])
+        } else {
+            // remove the tile
+            setSelectedTiles(prev => {
+                return prev.filter(
+                    selectedTile =>
+                        selectedTile.id !== tile.id
+                )
+            })
+        }
+
+    }
     const clearString = () => {
         setSelectedTiles([])
     }
 
-    window.tiles = randomized
+    const Submitbar = ({onChange, word}) => {
+
+        return(
+            <input
+                autoFocus
+                onSubmit={onSubmit}
+                onKeyDown={(e) => {
+                    onChange(e)
+                }}
+                value={word}
+                type={'text'}
+                placeholder={'Type words here...'}
+                style={{
+                    color:'white',
+                    border:'none',
+                    backgroundColor:'#3b7041',
+                    display:"block",
+                    marginLeft:'35%',
+                    marginRight:'1%',
+                    width: '25vw'
+                }}
+            />
+
+        )
+    }
+    const [openModal, setOpenModal] = useState(true)
+    const Modal = () => {
+
+      return(
+       <div className="modalBackground">
+           <div style={{
+               backgroundImage:`url(${backgroundImage})`
+           }}
+               className="modalContainer">
+               <div className="title">
+                   <h1>Welcome to Word Chaser</h1>
+               </div>
+               <div className="body">
+                   <p>INSTRUCTIONS</p>
+               </div>
+               <div className="footer">
+                   <Button
+
+                       variant="gradient"
+                       gradient={{ from: 'forestgreen', to: 'lime', deg: 105
+                   }}
+
+                       onClick={() => {
+                           setIsTimerStart(
+                               (prev) => prev === false
+                           )
+                           setOpenModal(false)
+                       }}
+
+                   > Play
+
+                   </Button>
+               </div>
+           </div>
+       </div>
+      )
+
+   }
+    const [highestScore, setHighestScore] = useState(0)
+
+   const [gameOverModal, setGameOverModal] = useState(false)
+    useEffect(() => {
+        // const storedBestWord = localStorage.getItem('bestWord')
+        const storedHighestScore  = localStorage.getItem('highestScore')
+            if (storedHighestScore && parseInt(storedHighestScore) > highestScore ){
+            setHighestScore(parseInt(storedHighestScore))
+        }
+         // if(storedBestWord){
+         //     setBestWord(JSON.parse(storedBestWord))
+         // }
+    }, [highestScore])
+   const GameOverModal = () => {
+       useEffect(() => {
+           if (totalScore > highestScore) {
+               setHighestScore(totalScore)
+               localStorage.setItem('highestScore', totalScore)
+           }
+       }, [totalScore])
+
+
+      return(
+       <div
+           className="EndModalBackground"
+       >
+           <div
+               style={{
+               backgroundImage:`url(${backgroundImage})`
+           }}
+               className="EndModalContainer">
+               <div
+                   className="EndTitle"
+               >
+                   <h1>Game Over</h1>
+               </div>
+               <div
+                   style={{
+                       display:'flex',
+                       flexDirection:'column'
+                   }}
+                   className="body">
+                   <p
+                       style={{
+                           fontWeight:'bold'
+                       }}
+                   >SCOREBOARD</p>
+                   <p><a
+                       style={{
+                           fontWeight:'bold',
+                       }}
+                   >High Score:</a> {highestScore}</p>
+                   <p><a
+                       style={{
+                           fontWeight:'bold',
+                       }}
+                   >Your Score:</a> {totalScore}</p>
+                   {/*<p>Best Word: {bestWord} {bestWord.points} </p>*/}
+               </div>
+               <div className="footer">
+                   <Button
+                       variant="gradient"
+                       gradient={{ from: 'forestgreen', to: 'lime', deg: 105
+                       }}
+                      className="AgainButton"
+                       onClick={() =>{
+                           setOpenModal(true)
+                           setGameOverModal(false)
+                           window.location.reload()
+                       }}
+
+                   >
+                       Play Again?
+                   </Button >
+               </div>
+           </div>
+       </div>
+      )
+   }
+    const [submitBarInput, setSubmitBarInput] = useState('')
+    const [shake, setShake] = useState(false)
+    const handleShake = () => {
+        setShake(true)
+        setTimeout(() => setShake(false), 1000)
+    }
 
     return (
         <div
@@ -319,6 +497,13 @@ export default function App() {
             }}
             className="App"
         >
+            {
+                openModal && <Modal />
+            }
+            {
+                gameOverModal &&
+                <GameOverModal  />
+            }
             <div
                 style={{
                     flex: 1
@@ -326,108 +511,128 @@ export default function App() {
             >
                 <div
                     style={{
+                        marginLeft:'7%',
+                        color:"white",
+                        marginTop:'10px',
+                        fontSize:'2rem',
+                        textAlign:"center",
                     }}
                 >
+                    {totalScore}
+                </div>
+                <div
+
+                    style={{
+                        textAlign:"center",
+                    }}
+                >
+
                 <Board
-                    tiles={randomized}
+                    shake={shake}
+                    score={totalScore}
+                    tiles={randomizedTiles}
                     word={word}
                     selectedTileIds={
                         selectedTiles.map(tile => tile.id)
                     }
-                    onTileClick={tile => {
-                        // prev = e, tile.letter = 'p' => 'ep'
+                    onTileClick={onTileClick}
+                />
+                </div>
 
-                        // tiles, selected
-                        const ids = selectedTiles.map(
-                            selectedTile => selectedTile.id
-                        )
+                <div>
+                    {/*<Timerbar>*/}
+                    {/*    <style>*/}
+                    {/*     {*/}
+                    {/*    height: 30px;*/}
+                    {/*    border-radius: 15px;*/}
+                    {/*    background-image: linear-gradient(to right, red, yellow);*/}
+                    {/*    animation: timer 60s linear;*/}
+                    {/*}*/}
 
-                        // tiles -> [ { letter, id, points, etc}]
-                        // selectedTiles -> [] ->  [ { letter, id, points, etc} ]
-                        // score -> selectedTiles.points
-                        // ids -> [ selectedTiles.id ]
-                        // word -> selectedTiles.letter
+                    {/*    </style>*/}
 
+                    {/*</Timerbar>*/}
+                <Timer
+                    shouldStart={isTimerStart}
+                    onTimer15Seconds={() => {
 
-
-                        // const getNeighbors = (i) => {
-                        //     const neighbors = []
-                        //     const coords = [
-                        //          i + 1, // right
-                        //          i - 1, // left
-                        //          i - 4,
-                        //          i + 4,
-                        //          i + 5,
-                        //          i - 5,
-                        //          i + 3,
-                        //          i - 3
-                        //     ]
-                        //
-                        //     coords.forEach((coord, i) => {
-                        //         neighbors.push(tiles[coord])
-                        //     })
-                        //
-                        //     return neighbors
-                        // }
-
-                        // const tileIndex = randomized.indexOf(tile)// change this to get the current tile's index
-                        //
-                        // const tileNeighbors = getNeighbors(tileIndex)
-                        // let hasNeighbor = true
-                        //
-                        // tileNeighbors.forEach(neighbor => {
-                        //     hasNeighbor = selectedTiles.includes(neighbor)
-                        // })
-                        //
-                        // if (!hasNeighbor) {
-                        //     return
-                        // }
-
-                        if (!ids.includes(tile.id)) {
-                            setSelectedTiles(prev => [...prev, tile])
-                        } else {
-                            // remove the tile
-                            setSelectedTiles(prev => {
-                                return prev.filter(
-                                    selectedTile =>
-                                        selectedTile.id !== tile.id
-                                )
-                            })
-                        }
-
+                    }}
+                    onTimerZeroOut={() => {
+                            setGameOverModal(true)
                     }}
                 />
                 </div>
                 <div
                     style={{
-                        textAlign: "center"
+                        display:'flex'
                     }}
                 >
-                    <button
-                        onClick={onSubmit}
-                    >
-                        Submit
-                    </button>
+                    <Submitbar
+                        style={{
 
-                    <button
-                        onClick={clearString}
-                    >Clear
-                    </button>
+                            border:'none',
+                            borderRadius:'5px'
+                        }}
+                        value={submitBarInput}
+                        onChange={e => {
+                            const key = e.key
+                            //  letter -> tile
+                            if (key === 'Enter'){
+                                onSubmit()
+                                return
+                            }
+                            if (key ==="Backspace") {
+
+                                const newSelectedTiles = selectedTiles.slice(0, -1)
+                                setSelectedTiles(
+                                    newSelectedTiles
+                                )
+                                return
+                            }
+                            const foundTiles = []
+                            randomizedTiles.forEach((tile) => {
+                                if (tile.letter === key ){
+                                    foundTiles.push(tile)
+                                }
+                            })
+                            console.log(foundTiles)
+                            if (foundTiles.length > 0){
+                                setSubmitBarInput(prev => `${prev}${key}`)
+                                foundTiles.forEach(tile => onTileClick(tile))
+                            }
+                            else {
+                                handleShake()
+                            }
+                        }}
+                        word={word}
+                    />
+                    <div>
+                        <button
+                            style={{
+                                backgroundColor:'green',
+                                color:"white",
+                            }}
+                            onClick={onSubmit}
+                        >
+                            ✓
+                        </button>
+
+                        <button
+                            style={{
+                                backgroundColor:'red',
+                                color:"white",
+                            }}
+                            onClick={clearString}
+                        >X
+                        </button>
+                    </div>
                 </div>
-                <Timer
-                    onTimer15Seconds={() => {
-
-                    }}
-                    onTimerZeroOut={() => {
-
-                    }}/>
-                <div
-                    style={{
-                        margin: '0 auto'
-                    }}
-                >
+                        <div>
                     <p
                         style={{
+                            textTransform:'uppercase',
+                            color: 'white',
+                            fontSize: '1.8rem',
                             textAlign: "center",
                             margin: 0,
                             padding: 0,
@@ -438,10 +643,13 @@ export default function App() {
                     {showInvalidWord &&
                         <p
                         style={{
+                            textTransform:'uppercase',
+                            color:'white',
+                            fontSize:'1.6rem',
+                            margin: '0 auto',
                             textAlign: "center",
-                            display: "inline-block",
-                            margin: 0,
-                            width:  "50%"
+                            display: "flex",
+                            flexDirection:"column"
                         }}
                     >
                         is not a valid word
@@ -449,29 +657,31 @@ export default function App() {
                     {hasDuplicates &&
                         <p
                             style={{
+                                textTransform:'uppercase',
+                                color: "white",
+                                display:'flex',
+                                flexDirection:'column',
+                                fontSize:'1.6rem',
+                                margin: '0 auto',
                                 textAlign: "center",
-                                display: "inline-block",
-                                margin: 0,
-                                width:  "50%"
                             }}
                         >
                             is a duplicate word
                         </p> }
-                </div>
+                        </div>
 
 
             </div>
-            {/** need to have valid words appended in the word bank
-             present total score for each letter
-             * iterate between the points
-             * display total points of word -> need array
-             * accumulate overall score
-             **/}
 
-
+            <div
+                style={{
+                    backgroundColor:'white',
+                }}
+            >
             <Wordbank
                 answers={answers}
             />
+            </div>
         </div>
     );
 }

@@ -1,11 +1,12 @@
 import {Tile} from "./Tile";
 
-export const Board = ({tiles, onTileClick, selectedTileIds}) => {
+export const Board = ({tiles, onTileClick, selectedTileIds, shake}) => {
     return (
         <div
+
             style={{
                 width: "20vw",
-                margin: '3em auto',
+                margin: '1em 40%',
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr 1fr 1fr",
                 gridTemplateRows: "1fr 1fr 1fr 1fr",
@@ -16,6 +17,7 @@ export const Board = ({tiles, onTileClick, selectedTileIds}) => {
             {tiles.map((tile, idx) => {
 
                     return <Tile
+                        shake={shake}
                         onClick={() => {
                             onTileClick(tile)
                         }}
