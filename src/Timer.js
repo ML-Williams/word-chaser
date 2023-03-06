@@ -2,40 +2,44 @@ import {useEffect} from "react";
 import {useCountDown} from "./UseCountDown";
 
 export const Timer = ({onTimerZeroOut, onTimer15Seconds, shouldStart,}) => {
-    const [counter, start, pause, reset] = useCountDown(120)
+    const [counter, start, reset] = useCountDown(120)
     useEffect(() => {
         if (shouldStart){
             start()
         }
-    }, [shouldStart])
+    }, [shouldStart, start])
 
     useEffect(() => {
         if (counter === 0) {
-            // game over?
+            // game over
             onTimerZeroOut()
             reset()
 
         }
 
-    }, [counter])
+    }, [counter, reset, onTimerZeroOut])
 
     return (
         <div
             style={{
+                borderRadius:'5px',
+                textAlign:'center',
+                backgroundColor: "#185929",
+                boxShadow:'inset 0 0 20px rgba(0, 0, 0, 0.2)',
                 color:'white',
-                margin: '0 auto',
-                width: "50vw",
+                marginLeft:'25px',
+                width: "10vw",
                 display: "flex",
                 height: "5vh"
             }}
         >
             <p
                 style={{
-                    margin: "0.2em auto",
-                    fontSize:"1.3rem"
+                    margin: "auto",
+                    fontSize:"1.2rem"
                 }}
             >
-                <span>Timer: {counter}</span></p>
+                <span> {counter}</span></p>
         </div>
     )
 }

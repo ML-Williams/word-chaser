@@ -27,7 +27,7 @@ export const Tile = ({tile, onClick, isSelected, shake}) => {
                 cursor: 'pointer',
                 backgroundImage:`url(${backgroundImage})`,
                 backgroundPosition: 'center center',
-                fontSize: "40px",
+                fontSize: "28px",
                 margin: '1px auto',
                 border,
                 height: '7vh',

@@ -7,6 +7,8 @@ export const Board = ({tiles, onTileClick, selectedTileIds, shake}) => {
             style={{
                 width: "20vw",
                 margin: '1em 40%',
+                marginBottom:'2em',
+                marginTop:'0',
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr 1fr 1fr",
                 gridTemplateRows: "1fr 1fr 1fr 1fr",

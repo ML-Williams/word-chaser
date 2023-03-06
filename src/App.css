@@ -16,8 +16,8 @@ body {
     align-items: center;
 }
 .modalContainer {
-    width: 350px;
-    height: 350px;
+    width: 300px;
+    height: 300px;
     border-radius: 8px;
     box-shadow: black 0 5px 15px;
     display: flex;
@@ -36,8 +36,9 @@ body {
 
 }
 .modalContainer .body {
+    text-align: center;
+    line-height: 0.5;
     flex: 50%;
-    display: flex;
     justify-content: center;
     align-items: center;
     font-size: 1.7rem;

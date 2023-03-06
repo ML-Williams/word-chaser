@@ -1,6 +1,6 @@
 import backgroundImage from './woodentile.png'
 import './App.css';
-import {useCallback, useEffect, useState} from "react"
+import {useCallback, useEffect, useRef, useState} from "react"
 import _ from 'underscore'
 import {nanoid} from "nanoid";
 import {Board} from "./Board";
@@ -9,13 +9,7 @@ import {Wordbank} from "./Wordbank";
 import { Button } from '@mantine/core'
 
 
-/**
-  UX (user experience):
- * - user comes onto screen and sees:
- *      - tasks for how to make them see that
- * - user preses play:
- *      - add username / click to start game
- */
+
 
 const API_words = 'https://random-word-api.herokuapp.com/all'
 
@@ -341,11 +335,19 @@ export default function App() {
         setSelectedTiles([])
     }
 
+
     const Submitbar = ({onChange, word}) => {
 
+            const handleFocus = (e) => {
+                if (/Mobi/.test(navigator.userAgent)) {
+                    e.target.blur()
+
+            }
+        }
         return(
             <input
                 autoFocus
+                onFocus={handleFocus}
                 onSubmit={onSubmit}
                 onKeyDown={(e) => {
                     onChange(e)
@@ -379,7 +381,22 @@ export default function App() {
                    <h1>Welcome to Word Chaser</h1>
                </div>
                <div className="body">
-                   <p>INSTRUCTIONS</p>
+                   <p
+                       style={{
+                           fontWeight:'bolder',
+                           marginTop:'0'
+                       }}
+                   >INSTRUCTIONS</p>
+                   <p
+                       style={{
+                           fontWeight:'bold',
+                           fontSize:'14px',
+                           lineHeight:'1'
+                       }}
+                   >To play you must create words using at least two characters.
+                       Words can be only formed with letters side-by-side (vertical, horizontal, & diagonal).
+                       Submit by pressing ENTER or selecting the last character of a word twice.
+                   </p>
                </div>
                <div className="footer">
                    <Button
@@ -408,14 +425,10 @@ export default function App() {
 
    const [gameOverModal, setGameOverModal] = useState(false)
     useEffect(() => {
-        // const storedBestWord = localStorage.getItem('bestWord')
         const storedHighestScore  = localStorage.getItem('highestScore')
             if (storedHighestScore && parseInt(storedHighestScore) > highestScore ){
             setHighestScore(parseInt(storedHighestScore))
         }
-         // if(storedBestWord){
-         //     setBestWord(JSON.parse(storedBestWord))
-         // }
     }, [highestScore])
    const GameOverModal = () => {
        useEffect(() => {
@@ -461,10 +474,10 @@ export default function App() {
                            fontWeight:'bold',
                        }}
                    >Your Score:</a> {totalScore}</p>
-                   {/*<p>Best Word: {bestWord} {bestWord.points} </p>*/}
                </div>
                <div className="footer">
                    <Button
+
                        variant="gradient"
                        gradient={{ from: 'forestgreen', to: 'lime', deg: 105
                        }}
@@ -526,6 +539,27 @@ export default function App() {
                         textAlign:"center",
                     }}
                 >
+                    <div>
+                        <p
+                            style={{
+                                fontWeight:'bold',
+                                fontSize:'16px',
+                                marginLeft:'7%',
+                                marginTop:'0',
+                                display:'flex',
+                                color: 'white',
+                            }}
+                        >TIME</p>
+                        <Timer
+                            shouldStart={isTimerStart}
+                            onTimer15Seconds={() => {
+
+                            }}
+                            onTimerZeroOut={() => {
+                                setGameOverModal(true)
+                            }}
+                        />
+                    </div>
 
                 <Board
                     shake={shake}
@@ -539,29 +573,6 @@ export default function App() {
                 />
                 </div>
 
-                <div>
-                    {/*<Timerbar>*/}
-                    {/*    <style>*/}
-                    {/*     {*/}
-                    {/*    height: 30px;*/}
-                    {/*    border-radius: 15px;*/}
-                    {/*    background-image: linear-gradient(to right, red, yellow);*/}
-                    {/*    animation: timer 60s linear;*/}
-                    {/*}*/}
-
-                    {/*    </style>*/}
-
-                    {/*</Timerbar>*/}
-                <Timer
-                    shouldStart={isTimerStart}
-                    onTimer15Seconds={() => {
-
-                    }}
-                    onTimerZeroOut={() => {
-                            setGameOverModal(true)
-                    }}
-                />
-                </div>
                 <div
                     style={{
                         display:'flex'
@@ -569,7 +580,6 @@ export default function App() {
                 >
                     <Submitbar
                         style={{
-
                             border:'none',
                             borderRadius:'5px'
                         }}
@@ -607,16 +617,6 @@ export default function App() {
                         word={word}
                     />
                     <div>
-                        <button
-                            style={{
-                                backgroundColor:'green',
-                                color:"white",
-                            }}
-                            onClick={onSubmit}
-                        >
-                            ✓
-                        </button>
-
                         <button
                             style={{
                                 backgroundColor:'red',
