@@ -1,6 +1,6 @@
 import backgroundImage from './woodentile.png'
 import './App.css';
-import {useCallback, useEffect, useRef, useState} from "react"
+import {useCallback, useEffect, useState} from "react"
 import _ from 'underscore'
 import {nanoid} from "nanoid";
 import {Board} from "./Board";
@@ -198,7 +198,6 @@ export default function App() {
     const [answers, setAnswers] = useState([])
     const [showInvalidWord, setShowInvalidWord]=useState(false)
     const [hasDuplicates, setHasDuplicates]= useState(false)
-    const [bestWord, setBestWord] = useState('')
 
     const onSubmit = useCallback(() => {
         // word = uon
@@ -337,7 +336,7 @@ export default function App() {
 
 
     const Submitbar = ({onChange, word}) => {
-
+            // prevent keyboard method on mobile
             const handleFocus = (e) => {
                 if (/Mobi/.test(navigator.userAgent)) {
                     e.target.blur()
@@ -356,13 +355,15 @@ export default function App() {
                 type={'text'}
                 placeholder={'Type words here...'}
                 style={{
+
+                    borderRadius:'5px',
                     color:'white',
                     border:'none',
                     backgroundColor:'#3b7041',
                     display:"block",
                     marginLeft:'35%',
                     marginRight:'1%',
-                    width: '25vw'
+                    width: '28vw'
                 }}
             />
 
@@ -619,6 +620,13 @@ export default function App() {
                     <div>
                         <button
                             style={{
+                                cursor:'pointer',
+                                textAlign:'center',
+                                height:'3.5vh',
+                                width:'3.5vw',
+                                border:'none',
+                                fontWeight:'bolder',
+                                borderRadius:'5px',
                                 backgroundColor:'red',
                                 color:"white",
                             }}
