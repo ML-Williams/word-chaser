@@ -313,8 +313,10 @@ export default function App() {
 
         }
         if (!hasSelectedNeighbor && selectedTiles.length !== 0) {
+            if(selectedTiles.includes(lastSelected)){
+                return
+        }
             handleShake()
-            return
         }
 
         if (!ids.includes(tile.id)) {
