@@ -208,6 +208,7 @@ export default function App() {
         const answersWords = answers.map(answer => answer.word)
         if(answersWords.includes(word)) {
             setHasDuplicates(true)
+                handleShake()
                 setTimeout(() =>{
                     setHasDuplicates(false)
                     setSelectedTiles([])
@@ -232,6 +233,7 @@ export default function App() {
         }
         else {
             setShowInvalidWord(true)
+                handleShake()
                 setTimeout(() => {
                     setShowInvalidWord(false)
                     setSelectedTiles([])
@@ -313,10 +315,11 @@ export default function App() {
 
         }
         if (!hasSelectedNeighbor && selectedTiles.length !== 0) {
-            if(selectedTiles.includes(lastSelected)){
+            if(lastSelected.id === tile.id){
                 return
-        }
+            }
             handleShake()
+            return
         }
 
         if (!ids.includes(tile.id)) {
@@ -604,18 +607,16 @@ export default function App() {
                             }
                             const foundTiles = []
                             randomizedTiles.forEach((tile) => {
-                                if (tile.letter === key ){
+                                if (tile.letter === key ) {
                                     foundTiles.push(tile)
                                 }
                             })
                             console.log(foundTiles)
-                            if (foundTiles.length > 0){
+                            if (foundTiles.length > 0) {
                                 setSubmitBarInput(prev => `${prev}${key}`)
                                 foundTiles.forEach(tile => onTileClick(tile))
                             }
-                            else {
-                                handleShake()
-                            }
+
                         }}
                         word={word}
                     />
